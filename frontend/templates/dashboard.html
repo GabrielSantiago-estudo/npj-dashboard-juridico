@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Painel analítico{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>Painel analítico</h1>
+        <p class="page-sub">
+            Bem-vindo(a), <strong>{{ usuario.nome_completo }}</strong>. Dados em tempo real do banco.
+        </p>
+    </div>
+    <a href="/atendimentos/novo" class="btn-primary btn-inline">+ Novo atendimento</a>
+</section>
+
+<form id="form-filtros" class="card filter-card" onsubmit="return false;">
+    <div class="filter-grid">
+        <div>
+            <label for="filtro-ano">Ano</label>
+            <select id="filtro-ano">
+                <option value="">Todos</option>
+                {% for a in anos_disponiveis %}
+                <option value="{{ a }}">{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="filtro-semestre">Semestre</label>
+            <select id="filtro-semestre">
+                <option value="">Todos</option>
+                <option value="1">1º semestre</option>
+                <option value="2">2º semestre</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtro-area">Área jurídica</label>
+            <select id="filtro-area">
+                <option value="">Todas</option>
+                {% for a in areas %}
+                <option value="{{ a.id }}">{{ a.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="filter-actions">
+        <button type="button" id="btn-aplicar" class="btn-primary btn-inline">Aplicar filtros</button>
+        <button type="button" id="btn-limpar" class="btn-secondary btn-inline">Limpar</button>
+    </div>
+</form>
+
+<div class="stat-grid mt-16">
+    <div class="stat-card">
+        <div class="stat-label">Atendimentos ativos</div>
+        <div class="stat-value" id="kpi-total">—</div>
+        <div class="stat-hint" id="kpi-arquivados">Carregando...</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Assistidos únicos</div>
+        <div class="stat-value" id="kpi-assistidos">—</div>
+        <div class="stat-hint">Pessoas atendidas</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Média por mês</div>
+        <div class="stat-value" id="kpi-media">—</div>
+        <div class="stat-hint">Atendimentos/mês ativo</div>
+    </div>
+</div>
+
+<div class="charts-grid mt-24">
+    <div class="card chart-full">
+        <h2 class="section-title">Evolução por ano</h2>
+        <div class="chart-container"><canvas id="chart-ano"></canvas></div>
+    </div>
+
+    <div class="card chart-full">
+        <h2 class="section-title">Atendimentos por mês</h2>
+        <div class="chart-container"><canvas id="chart-mes"></canvas></div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Distribuição por área</h2>
+        <div class="chart-container"><canvas id="chart-area"></canvas></div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Produtividade por equipe</h2>
+        <div class="chart-container"><canvas id="chart-equipe"></canvas></div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Situação dos atendimentos</h2>
+        <div class="chart-container"><canvas id="chart-situacao"></canvas></div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Acesso rápido</h2>
+        <div class="quick-actions quick-actions-compact">
+            <a class="quick-action" href="/atendimentos/novo">
+                <span class="qa-icon">+</span>
+                <span class="qa-title">Novo atendimento</span>
+            </a>
+            <a class="quick-action" href="/atendimentos">
+                <span class="qa-icon">≡</span>
+                <span class="qa-title">Consultar</span>
+            </a>
+            <a class="quick-action" href="/importacao">
+                <span class="qa-icon">⇪</span>
+                <span class="qa-title">Importar</span>
+            </a>
+            <a class="quick-action" href="/admin/excel/download">
+                <span class="qa-icon">▤</span>
+                <span class="qa-title">Baixar Excel</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-16">
+    <h2 class="section-title">Excel operacional</h2>
+    <p class="muted">
+        O arquivo <code>data/NPJ_Operacional.xlsx</code> é atualizado automaticamente
+        após cada cadastro, edição ou arquivamento.
+    </p>
+    <div class="form-actions">
+        <form method="post" action="/admin/excel/regenerar" style="display:inline">
+            <button type="submit" class="btn-secondary btn-inline">Regenerar agora</button>
+        </form>
+        <a href="/admin/excel/download" class="btn-secondary btn-inline">Baixar Excel</a>
+    </div>
+</div>
+
+{% if ultimos %}
+<div class="card mt-16">
+    <h2 class="section-title">Últimos atendimentos registrados</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Protocolo</th>
+                <th>Assistido</th>
+                <th>Área</th>
+                <th>Situação</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in ultimos %}
+            <tr>
+                <td>{{ a.data_atendimento.strftime("%d/%m/%Y") }}</td>
+                <td>{{ a.numero_protocolo or "—" }}</td>
+                <td>{{ a.assistido.nome_original }}</td>
+                <td>{{ a.area_juridica.nome if a.area_juridica else "—" }}</td>
+                <td>
+                    <span
+                        class="badge badge-{{ a.situacao.value|lower|replace('í','i')|replace('é','e')|replace('á','a')|replace('ó','o')|replace('ú','u')|replace('ç','c') }}">
+                        {{ a.situacao.value }}
+                    </span>
+                </td>
+                <td><a href="/atendimentos/{{ a.id }}" class="link">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', path='js/dashboard.js') }}?v=1"></script>
+{% endblock %}

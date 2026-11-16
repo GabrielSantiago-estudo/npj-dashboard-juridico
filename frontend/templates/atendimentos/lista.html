@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Atendimentos{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div>
+    <h1>Atendimentos</h1>
+    <p class="page-sub">{{ total }} registro(s) encontrado(s).</p>
+  </div>
+  <a href="/atendimentos/novo" class="btn-primary btn-inline">+ Novo atendimento</a>
+</section>
+
+<form method="get" action="/atendimentos" class="card filter-card">
+  <div class="filter-grid">
+    <div>
+      <label>Buscar</label>
+      <input type="text" name="q" value="{{ filtros.q }}" placeholder="Nome, protocolo, processo...">
+    </div>
+    <div>
+      <label>De</label>
+      <input type="date" name="data_inicio" value="{{ filtros.data_inicio }}">
+    </div>
+    <div>
+      <label>Ate</label>
+      <input type="date" name="data_fim" value="{{ filtros.data_fim }}">
+    </div>
+    <div>
+      <label>Ano</label>
+      <input type="number" name="ano" value="{{ filtros.ano }}" min="2006" max="2100" placeholder="2024">
+    </div>
+    <div>
+      <label>Semestre</label>
+      <select name="semestre">
+        <option value="">Todos</option>
+        <option value="1" {% if filtros.semestre == "1" %}selected{% endif %}>1o</option>
+        <option value="2" {% if filtros.semestre == "2" %}selected{% endif %}>2o</option>
+      </select>
+    </div>
+    <div>
+      <label>Area</label>
+      <select name="area_id">
+        <option value="">Todas</option>
+        {% for a in areas %}
+          <option value="{{ a.id }}" {% if filtros.area_id == a.id|string %}selected{% endif %}>
+            {{ a.nome }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Situacao</label>
+      <select name="situacao">
+        <option value="">Todas</option>
+        {% for s in situacoes %}
+          <option value="{{ s.value }}" {% if filtros.situacao == s.value %}selected{% endif %}>
+            {{ s.value }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-check">
+      <label>
+        <input type="checkbox" name="incluir_arquivados" value="1"
+               {% if filtros.incluir_arquivados %}checked{% endif %}>
+        Incluir arquivados
+      </label>
+    </div>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn-primary btn-inline">Filtrar</button>
+    <a href="/atendimentos" class="btn-secondary btn-inline">Limpar</a>
+  </div>
+</form>
+
+{% if itens %}
+<div class="card mt-16">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Data</th><th>Protocolo</th><th>Assistido</th>
+        <th>Area</th><th>Equipe</th><th>Situacao</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in itens %}
+      <tr {% if not a.ativo %}class="row-arquivado"{% endif %}>
+        <td>{{ a.data_atendimento.strftime("%d/%m/%Y") }}</td>
+        <td>{{ a.numero_protocolo or "-" }}</td>
+        <td>{{ a.assistido.nome_original }}</td>
+        <td>{{ a.area_juridica.nome if a.area_juridica else "-" }}</td>
+        <td>{{ a.equipe.nome if a.equipe else "-" }}</td>
+        <td>
+          <span class="badge badge-{{ a.situacao.value|lower|replace('i','i')|replace('e','e')|replace('a','a')|replace('o','o')|replace('u','u')|replace('c','c') }}">
+            {{ a.situacao.value }}
+          </span>
+        </td>
+        <td class="actions">
+          <a href="/atendimentos/{{ a.id }}" class="link">Ver</a>
+          {% if a.ativo %}
+            <a href="/atendimentos/{{ a.id }}/editar" class="link">Editar</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if total_paginas > 1 %}
+<nav class="pagination">
+  {% set qs_base = "?q=" ~ filtros.q ~ "&data_inicio=" ~ filtros.data_inicio ~
+                    "&data_fim=" ~ filtros.data_fim ~ "&ano=" ~ filtros.ano ~
+                    "&semestre=" ~ filtros.semestre ~ "&area_id=" ~ filtros.area_id ~
+                    "&situacao=" ~ filtros.situacao ~
+                    "&incluir_arquivados=" ~ filtros.incluir_arquivados %}
+  {% if page > 1 %}
+    <a href="/atendimentos{{ qs_base }}&page={{ page - 1 }}" class="page-btn">Anterior</a>
+  {% endif %}
+  <span class="page-info">Pagina {{ page }} de {{ total_paginas }}</span>
+  {% if page < total_paginas %}
+    <a href="/atendimentos{{ qs_base }}&page={{ page + 1 }}" class="page-btn">Proxima</a>
+  {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="card mt-16 empty">
+  <p>Nenhum atendimento encontrado com os filtros atuais.</p>
+  <a href="/atendimentos/novo" class="btn-primary btn-inline">Cadastrar primeiro atendimento</a>
+</div>
+{% endif %}
+{% endblock %}

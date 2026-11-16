@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Pré-visualização da importação{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div>
+    <h1>Pré-visualização</h1>
+    <p class="page-sub">
+      {{ preview.arquivo_nome }} — {{ preview.linhas|length }} linha(s).
+      <strong>Nada foi gravado ainda.</strong>
+    </p>
+  </div>
+  <a href="/importacao" class="btn-secondary btn-inline">← Reenviar</a>
+</section>
+
+{% if erro %}
+<div class="alert alert-error">{{ erro }}</div>
+{% endif %}
+
+<div class="stat-grid mt-16">
+  <div class="stat-card">
+    <div class="stat-label">Linhas no arquivo</div>
+    <div class="stat-value">{{ preview.relatorio.total_linhas }}</div>
+    <div class="stat-hint">Vazias: {{ preview.relatorio.linhas_vazias }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Prontas para importar</div>
+    <div class="stat-value">{{ preview.relatorio.linhas_ok + preview.relatorio.linhas_tratadas }}</div>
+    <div class="stat-hint">Tratadas: {{ preview.relatorio.linhas_tratadas }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Precisam de revisão</div>
+    <div class="stat-value">{{ preview.relatorio.precisa_revisao }}</div>
+    <div class="stat-hint">
+      Inconsistentes: {{ preview.relatorio.linhas_inconsistentes }} ·
+      Duplicadas: {{ preview.relatorio.linhas_duplicadas }}
+    </div>
+  </div>
+</div>
+
+<form method="post" action="/importacao/confirmar/{{ preview.token }}" class="mt-24">
+  <div class="card">
+    <h2 class="section-title">Detalhes por linha</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Linha</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th>Cliente</th>
+          <th>Área</th>
+          <th>Situação</th>
+          <th>Protocolo</th>
+          <th>Avisos</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ln in preview.linhas %}
+        <tr>
+          <td>{{ ln.numero_linha }}</td>
+          <td>
+            {% if ln.status == "ok" %}
+              <span class="badge badge-concluido">OK</span>
+            {% elif ln.status == "tratado" %}
+              <span class="badge badge-ativo">Tratado</span>
+            {% elif ln.status == "duplicado" %}
+              <span class="badge badge-indeferido">Duplicado</span>
+            {% elif ln.status == "inconsistente" %}
+              <span class="badge badge-indeferido">Inconsistente</span>
+            {% else %}
+              <span class="badge badge-arquivado">Vazio</span>
+            {% endif %}
+          </td>
+          <td>{{ ln.normalizado.get("data_atendimento") or "—" }}</td>
+          <td>{{ ln.normalizado.get("assistido_nome") or "—" }}</td>
+          <td>{{ ln.normalizado.get("area_nome") or "—" }}</td>
+          <td>{{ ln.normalizado.get("situacao") or "—" }}</td>
+          <td>{{ ln.normalizado.get("numero_protocolo") or "—" }}</td>
+          <td>
+            {% if ln.avisos %}
+              <small class="muted">{{ ln.avisos|join("; ") }}</small>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="form-actions mt-16">
+    <button type="submit" class="btn-primary btn-inline">
+      Confirmar importação ({{ preview.relatorio.total_linhas - preview.relatorio.linhas_vazias }} registros)
+    </button>
+    <a href="/importacao" class="btn-secondary btn-inline">Cancelar</a>
+  </div>
+
+  <p class="hint mt-16">
+    Registros com status "Tratado", "Duplicado" ou "Inconsistente" serão importados
+    com origem <strong>importado_revisao</strong> para revisão posterior.
+  </p>
+</form>
+{% endblock %}

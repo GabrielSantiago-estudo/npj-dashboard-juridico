@@ -1,0 +1,107 @@
+# ============================================================
+# NPJ - Sistema de Gestao
+# ============================================================
+# Regra de ouro: arquivos com dados reais NUNCA vao para o git.
+# EXCECAO: a planilha ficticia de teste E versionada.
+# ============================================================
+
+# ------------------------------------------------------------
+# Ambiente Python
+# ------------------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ------------------------------------------------------------
+# Testes e ferramentas
+# ------------------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+
+# ------------------------------------------------------------
+# Ambiente e credenciais (NUNCA versionar)
+# ------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# ------------------------------------------------------------
+# Banco de dados (contem dados - nunca versionar)
+# ------------------------------------------------------------
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/*.sqlite
+data/*.sqlite3
+
+# ------------------------------------------------------------
+# Backups (contem dados - nunca versionar)
+# ------------------------------------------------------------
+data/backups/*
+!data/backups/.gitkeep
+
+# ------------------------------------------------------------
+# Excel operacional (auto-gerado - nunca versionar)
+# ------------------------------------------------------------
+data/*.xlsx
+data/*.xlsx.tmp
+
+# ------------------------------------------------------------
+# Planilha historica FICTICIA
+# EXCECAO: mantida no repo para que os testes funcionem
+# out-of-box ao clonar (sem precisar rodar o gerador)
+# ------------------------------------------------------------
+imports/*.xlsx
+!imports/NPJ_Historico_FICTICIO_2006_2025.xlsx
+!imports/.gitkeep
+
+# ------------------------------------------------------------
+# Staging de upload (temporario)
+# ------------------------------------------------------------
+imports/_staging/*
+!imports/_staging/.gitkeep
+
+# ------------------------------------------------------------
+# Logs e exports (temporarios)
+# ------------------------------------------------------------
+logs/*
+!logs/.gitkeep
+*.log
+exports/*
+!exports/.gitkeep
+
+# ------------------------------------------------------------
+# Sistema operacional (lixo)
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------
+# IDEs
+# ------------------------------------------------------------
+.vscode/
+.idea/
+*.code-workspace
+*.iml

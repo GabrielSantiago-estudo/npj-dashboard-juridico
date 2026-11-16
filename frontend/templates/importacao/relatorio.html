@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Relatório de importação{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div>
+    <h1>Importação concluída</h1>
+    <p class="page-sub">Todos os registros válidos foram gravados no banco.</p>
+  </div>
+  <div class="header-actions">
+    <a href="/atendimentos" class="btn-secondary btn-inline">Ver atendimentos</a>
+    <a href="/admin/excel/download" class="btn-primary btn-inline">Baixar Excel operacional</a>
+  </div>
+</section>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Importados</div>
+    <div class="stat-value">{{ relatorio.importados }}</div>
+    <div class="stat-hint">Atendimentos criados</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Assistidos criados</div>
+    <div class="stat-value">{{ relatorio.assistidos_criados }}</div>
+    <div class="stat-hint">Reutilizados: {{ relatorio.assistidos_reutilizados }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Para revisão</div>
+    <div class="stat-value">{{ relatorio.precisa_revisao }}</div>
+    <div class="stat-hint">Origem: importado_revisao</div>
+  </div>
+</div>
+
+<div class="card mt-24">
+  <h2 class="section-title">Totais do processamento</h2>
+  <table class="table">
+    <tbody>
+      <tr><td>Total de linhas na planilha</td><td>{{ relatorio.total_linhas }}</td></tr>
+      <tr><td>Linhas vazias (ignoradas)</td><td>{{ relatorio.linhas_vazias }}</td></tr>
+      <tr><td>Linhas OK</td><td>{{ relatorio.linhas_ok }}</td></tr>
+      <tr><td>Linhas tratadas (normalizadas)</td><td>{{ relatorio.linhas_tratadas }}</td></tr>
+      <tr><td>Linhas inconsistentes</td><td>{{ relatorio.linhas_inconsistentes }}</td></tr>
+      <tr><td>Linhas duplicadas</td><td>{{ relatorio.linhas_duplicadas }}</td></tr>
+      <tr><td><strong>Total importado</strong></td><td><strong>{{ relatorio.importados }}</strong></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card mt-16 muted">
+  <p>
+    O arquivo <code>data/NPJ_Operacional.xlsx</code> foi regenerado automaticamente.
+    Use-o como snapshot exportavel.
+  </p>
+</div>
+{% endblock %}

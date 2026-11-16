@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Atendimento #{{ atendimento.id }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>Atendimento {{ atendimento.numero_protocolo or ("#" ~ atendimento.id) }}</h1>
+        <p class="page-sub">
+            <span
+                class="badge badge-{{ atendimento.situacao.value|lower|replace('í','i')|replace('é','e')|replace('á','a')|replace('ó','o')|replace('ú','u')|replace('ç','c') }}">
+                {{ atendimento.situacao.value }}
+            </span>
+            {% if not atendimento.ativo %}<span class="badge badge-arquivado">Arquivado</span>{% endif %}
+        </p>
+    </div>
+    <div class="header-actions">
+        <a href="/atendimentos" class="btn-secondary btn-inline">← Voltar</a>
+        {% if atendimento.ativo %}
+        <a href="/atendimentos/{{ atendimento.id }}/editar" class="btn-primary btn-inline">Editar</a>
+        {% endif %}
+    </div>
+</section>
+
+<div class="card">
+    <h2 class="section-title">Dados do atendimento</h2>
+    <dl class="dl-grid">
+        <dt>Data</dt>
+        <dd>{{ atendimento.data_atendimento.strftime("%d/%m/%Y") }}</dd>
+        <dt>Protocolo</dt>
+        <dd>{{ atendimento.numero_protocolo or "—" }}</dd>
+        <dt>Área</dt>
+        <dd>{{ atendimento.area_juridica.nome if atendimento.area_juridica else "—" }}</dd>
+        <dt>Equipe</dt>
+        <dd>{{ atendimento.equipe.nome if atendimento.equipe else "—" }}</dd>
+        <dt>Vara</dt>
+        <dd>{{ atendimento.vara or "—" }}</dd>
+        <dt>Processo</dt>
+        <dd>{{ atendimento.numero_processo or "—" }}</dd>
+        <dt>Endereço da pasta</dt>
+        <dd>{{ atendimento.endereco_pasta or "—" }}</dd>
+        <dt>Assistido</dt>
+        <dd>
+            <a href="/assistidos/{{ atendimento.assistido.id }}/historico" class="link">
+                {{ atendimento.assistido.nome_original }}
+            </a>
+            {% if atendimento.assistido.cpf %}<small>(CPF {{ atendimento.assistido.cpf }})</small>{% endif %}
+        </dd>
+        <dt>Parte contrariada</dt>
+        <dd>{{ atendimento.parte_contrariada or "—" }}</dd>
+        {% if atendimento.motivo_arquivamento %}
+        <dt>Motivo</dt>
+        <dd>{{ atendimento.motivo_arquivamento }}</dd>
+        {% endif %}
+    </dl>
+</div>
+
+{% if atendimento.assunto %}
+<div class="card mt-16">
+    <h2 class="section-title">Assunto</h2>
+    <p class="pre">{{ atendimento.assunto }}</p>
+</div>
+{% endif %}
+
+<div class="card mt-16 muted">
+    <p>
+        Criado em {{ atendimento.criado_em.strftime("%d/%m/%Y %H:%M") }} ·
+        Atualizado em {{ atendimento.atualizado_em.strftime("%d/%m/%Y %H:%M") }} ·
+        Origem: {{ atendimento.origem }}
+    </p>
+</div>
+
+{% if atendimento.ativo %}
+<form method="post" action="/atendimentos/{{ atendimento.id }}/arquivar" class="mt-16"
+    onsubmit="return confirm('Arquivar este atendimento? Ele deixa de aparecer na lista padrão, mas continua preservado.');">
+    <button type="submit" class="btn-danger btn-inline">Arquivar atendimento</button>
+</form>
+{% endif %}
+{% endblock %}

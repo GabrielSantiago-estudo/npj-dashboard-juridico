@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Entrar{% endblock %}
+
+{% block content %}
+<section class="login-wrap">
+    <div class="card login-card">
+        <h1 class="login-title">Acessar o sistema</h1>
+        <p class="login-sub">Identifique-se com sua conta individual.</p>
+
+        {% if erro %}
+        <div class="alert alert-error" role="alert">{{ erro }}</div>
+        {% endif %}
+
+        <form method="post" action="/login" class="form">
+            <input type="hidden" name="next" value="{{ next or '/' }}">
+
+            <label for="username">Usuário</label>
+            <input id="username" name="username" type="text" autocomplete="username" required autofocus maxlength="80"
+                placeholder="ex.: admin">
+
+            <label for="password">Senha</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required
+                maxlength="200" placeholder="••••••••">
+
+            <button type="submit" class="btn-primary">Entrar</button>
+        </form>
+
+        <p class="login-hint">
+            Acesso restrito a usuários autorizados do NPJ.
+        </p>
+    </div>
+</section>
+{% endblock %}

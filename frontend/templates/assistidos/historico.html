@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Histórico — {{ assistido.nome_original }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>Histórico do assistido</h1>
+        <p class="page-sub">
+            <strong>{{ assistido.nome_original }}</strong>
+            {% if assistido.cpf %}<span class="muted">(CPF {{ assistido.cpf }})</span>{% endif %}
+            — {{ atendimentos|length }} atendimento(s)
+        </p>
+    </div>
+    <a href="/atendimentos" class="btn-secondary btn-inline">← Voltar</a>
+</section>
+
+{% if atendimentos %}
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Protocolo</th>
+                <th>Área</th>
+                <th>Assunto</th>
+                <th>Situação</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in atendimentos %}
+            <tr {% if not a.ativo %}class="row-arquivado" {% endif %}>
+                <td>{{ a.data_atendimento.strftime("%d/%m/%Y") }}</td>
+                <td>{{ a.numero_protocolo or "—" }}</td>
+                <td>{{ a.area_juridica.nome if a.area_juridica else "—" }}</td>
+                <td>{{ (a.assunto or "—")[:80] }}{% if a.assunto and a.assunto|length > 80 %}...{% endif %}</td>
+                <td>
+                    <span
+                        class="badge badge-{{ a.situacao.value|lower|replace('í','i')|replace('é','e')|replace('á','a')|replace('ó','o')|replace('ú','u')|replace('ç','c') }}">
+                        {{ a.situacao.value }}
+                    </span>
+                </td>
+                <td><a href="/atendimentos/{{ a.id }}" class="link">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card empty">
+    <p>Nenhum atendimento registrado para este assistido.</p>
+</div>
+{% endif %}
+{% endblock %}

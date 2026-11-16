@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Backups{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>Backups</h1>
+        <p class="page-sub">
+            Snapshots do banco de dados. Cada backup é verificado por
+            <code>PRAGMA integrity_check</code> ao ser criado.
+        </p>
+    </div>
+    <a href="/dashboard" class="btn-secondary btn-inline">← Voltar</a>
+</section>
+
+<div class="card">
+    <h2 class="section-title">Criar novo backup</h2>
+    <p class="muted">
+        Cria um snapshot do estado atual do banco em <code>data/backups/</code>.
+        O arquivo pode ser baixado e guardado externamente.
+    </p>
+    <form method="post" action="/admin/backups/criar">
+        <button type="submit" class="btn-primary btn-inline">Criar backup agora</button>
+    </form>
+</div>
+
+<div class="card mt-16">
+    <h2 class="section-title">Backups existentes ({{ backups|length }})</h2>
+
+    {% if backups %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Arquivo</th>
+                <th>Tipo</th>
+                <th>Tamanho</th>
+                <th>Integridade</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in backups %}
+            <tr>
+                <td>{{ b.criado_em.strftime("%d/%m/%Y %H:%M:%S") }}</td>
+                <td><code>{{ b.caminho.split("\\")[-1].split("/")[-1] }}</code></td>
+                <td>
+                    {% if b.tipo == "automatico" %}
+                    <span class="badge badge-ativo">Automático</span>
+                    {% elif b.tipo == "pre_restore" %}
+                    <span class="badge badge-concluido">Pré-restore</span>
+                    {% else %}
+                    <span class="badge badge-arquivado">Manual</span>
+                    {% endif %}
+                </td>
+                <td>{{ "%.1f"|format(b.tamanho_bytes / 1024) }} KB</td>
+                <td>
+                    {% if b.integridade_ok %}
+                    <span class="badge badge-concluido">OK</span>
+                    {% else %}
+                    <span class="badge badge-indeferido">Falha</span>
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <a href="/admin/backups/{{ b.id }}/download" class="link">Baixar</a>
+                    <form method="post" action="/admin/backups/{{ b.id }}/restaurar" style="display:inline"
+                        onsubmit="return confirm('Restaurar este backup? O estado atual será salvo em um backup pré-restore.');">
+                        <button type="submit" class="link"
+                            style="background:none;border:0;cursor:pointer;padding:0;color:var(--azul-destaque);font-weight:600;">
+                            Restaurar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+        <p>Nenhum backup criado ainda.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card mt-16 muted">
+    <p>
+        <strong>Restauração segura:</strong> antes de restaurar, o sistema cria
+        automaticamente um backup do estado atual com tipo <code>pre_restore</code>.
+        Se algo der errado, basta restaurar esse backup.
+    </p>
+    <p>
+        <strong>Backup automático:</strong> configurável em <code>.env</code>
+        com <code>BACKUP_AUTO_ENABLED=true</code> e
+        <code>BACKUP_AUTO_INTERVAL_HOURS</code>.
+    </p>
+</div>
+{% endblock %}

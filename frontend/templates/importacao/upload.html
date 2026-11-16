@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Importar planilha{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div>
+    <h1>Importar planilha histórica</h1>
+    <p class="page-sub">
+      Envie o arquivo Excel com o histórico do NPJ. Nada é gravado antes da sua confirmação.
+    </p>
+  </div>
+  <a href="/dashboard" class="btn-secondary btn-inline">← Voltar</a>
+</section>
+
+{% if erro %}
+<div class="alert alert-error">{{ erro }}</div>
+{% endif %}
+
+<div class="card">
+  <h2 class="section-title">Arquivo</h2>
+  <form method="post" action="/importacao/upload" enctype="multipart/form-data">
+    <label for="arquivo-input" class="file-drop" id="file-drop">
+      <input type="file" name="arquivo" id="arquivo-input" accept=".xlsx,.xls" required hidden>
+
+      <div class="file-drop-icon" id="file-drop-icon">⇪</div>
+      <div class="file-drop-title" id="file-drop-title">
+        Arraste a planilha aqui ou clique para escolher
+      </div>
+      <div class="file-drop-hint" id="file-drop-hint">
+        Formatos aceitos: <strong>.xlsx</strong> e <strong>.xls</strong>
+      </div>
+      <span class="btn-primary btn-inline file-drop-btn">Selecionar arquivo</span>
+    </label>
+
+    <p class="hint mt-16">
+      <strong>Colunas esperadas:</strong> DATA, NUMERO DE PROTOCOLO, CLIENTE,
+      EQUIPE, SITUACAO, MOTIVO DO ARQUIVAMENTO/INDEFERIMENTO, PROCESSO,
+      VARA, AREA, ASSUNTO, ENDERECO DAS PASTAS, PARTE CONTRARIADA.
+    </p>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary btn-inline">
+        Enviar e pré-visualizar
+      </button>
+      <button type="button" class="btn-secondary btn-inline" id="btn-limpar" hidden>
+        Remover arquivo
+      </button>
+    </div>
+  </form>
+</div>
+
+<div class="card mt-16 muted">
+  <p>
+    Você verá uma pré-visualização completa antes de confirmar.
+    Nenhum registro é gravado até você clicar em <strong>Confirmar importação</strong>.
+  </p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var input = document.getElementById('arquivo-input');
+  var drop = document.getElementById('file-drop');
+  var icon = document.getElementById('file-drop-icon');
+  var title = document.getElementById('file-drop-title');
+  var hint = document.getElementById('file-drop-hint');
+  var btnLimpar = document.getElementById('btn-limpar');
+
+  var TEXTO_PADRAO = 'Arraste a planilha aqui ou clique para escolher';
+  var HINT_PADRAO = 'Formatos aceitos: <strong>.xlsx</strong> e <strong>.xls</strong>';
+
+  function fmtBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  function atualizarUI(file) {
+    if (file) {
+      drop.classList.add('has-file');
+      icon.textContent = '✓';
+      title.textContent = file.name;
+      hint.innerHTML = '<strong>' + fmtBytes(file.size) + '</strong> · pronto para envio';
+      btnLimpar.hidden = false;
+    } else {
+      drop.classList.remove('has-file');
+      icon.textContent = '⇪';
+      title.textContent = TEXTO_PADRAO;
+      hint.innerHTML = HINT_PADRAO;
+      btnLimpar.hidden = true;
+    }
+  }
+
+  input.addEventListener('change', function () {
+    atualizarUI(input.files[0] || null);
+  });
+
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      drop.classList.add('drag-over');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      drop.classList.remove('drag-over');
+    });
+  });
+
+  drop.addEventListener('drop', function (e) {
+    var files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      input.files = files;
+      atualizarUI(files[0]);
+    }
+  });
+
+  btnLimpar.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    input.value = '';
+    atualizarUI(null);
+  });
+
+  atualizarUI(null);
+})();
+</script>
+{% endblock %}
